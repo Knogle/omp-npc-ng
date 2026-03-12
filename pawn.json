@@ -1,0 +1,35 @@
+{
+    "user": "TODO",
+    "repo": "omp-npc-ng",
+    "resources": [
+        {
+            "name": "^omp-npc-ng-.+-[Ll]inux\\.tar\\.gz$",
+            "platform": "linux",
+            "archive": true,
+            "includes": [
+                "omp-npc-ng-.+/pawno/include"
+            ],
+            "plugins": [
+                "omp-npc-ng-.+/components/OMPNPCNG.so",
+                "omp-npc-ng-.+/components/OMPNPCNGPawn.so"
+            ]
+        },
+        {
+            "name": "^omp-npc-ng-.+-(win32|Win32|Windows)\\.zip$",
+            "platform": "windows",
+            "archive": true,
+            "includes": [
+                "omp-npc-ng-.+/pawno/include"
+            ],
+            "plugins": [
+                "omp-npc-ng-.+/components/OMPNPCNG.dll",
+                "omp-npc-ng-.+/components/OMPNPCNGPawn.dll"
+            ]
+        }
+    ],
+    "runtime": {
+        "plugins": [
+            "TODO/omp-npc-ng"
+        ]
+    }
+}

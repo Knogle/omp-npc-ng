@@ -1,0 +1,28 @@
+add_library(OMPNPCNGPawn SHARED
+	component_main.cpp
+)
+
+target_link_libraries(OMPNPCNGPawn PRIVATE
+	OMP-SDK
+)
+
+set_target_properties(OMPNPCNGPawn PROPERTIES
+	OUTPUT_NAME OMPNPCNGPawn
+	PREFIX ""
+)
+
+if(MSVC)
+	set_target_properties(OMPNPCNGPawn PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/components"
+	)
+else()
+	set_target_properties(OMPNPCNGPawn PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/components"
+	)
+endif()
+
+target_compile_definitions(OMPNPCNGPawn PRIVATE
+	OMP_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+	OMP_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+	OMP_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)

@@ -1,0 +1,29 @@
+name: Bootstrap CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Bootstrap
+            os: ubuntu-24.04
+          - name: Windows Bootstrap
+            os: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DOMP_NPC_NG_BOOTSTRAP_ONLY=ON
+
+      - name: Build
+        run: cmake --build build --parallel

@@ -1,0 +1,29 @@
+add_library(OMPNPCNG SHARED
+	component_main.cpp
+)
+
+target_link_libraries(OMPNPCNG PRIVATE
+	OMP-SDK
+	OMP-NetCode
+)
+
+set_target_properties(OMPNPCNG PROPERTIES
+	OUTPUT_NAME OMPNPCNG
+	PREFIX ""
+)
+
+if(MSVC)
+	set_target_properties(OMPNPCNG PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/components"
+	)
+else()
+	set_target_properties(OMPNPCNG PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/components"
+	)
+endif()
+
+target_compile_definitions(OMPNPCNG PRIVATE
+	OMP_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
+	OMP_VERSION_MINOR=${PROJECT_VERSION_MINOR}
+	OMP_VERSION_PATCH=${PROJECT_VERSION_PATCH}
+)

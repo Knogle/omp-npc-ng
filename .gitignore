@@ -1,0 +1,7 @@
+/build/
+/build-*/
+/.idea/
+/.vscode/
+/.vs/
+*.user
+*.swp

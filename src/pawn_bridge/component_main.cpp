@@ -1,5 +1,6 @@
-#include <Server/Components/Pawn/pawn.hpp>
-#include <sdk.hpp>
+#include "bridge_runtime.hpp"
+#include "npc_events.hpp"
+#include <Server/Components/Pawn/Impl/pawn_natives.hpp>
 
 static const UID OMPNPCNG_PAWN_UID = UID(0xa2c309d8b6a94611);
 
@@ -18,9 +19,9 @@ public:
 		return SemanticVersion(OMP_VERSION_MAJOR, OMP_VERSION_MINOR, OMP_VERSION_PATCH, BUILD_NUMBER);
 	}
 
-	void onLoad(ICore* c) override
+	void onLoad(ICore* core) override
 	{
-		core_ = c;
+		ompnpcng::pawn_bridge::setCore(core);
 	}
 
 	void onInit(IComponentList* components) override
@@ -30,29 +31,43 @@ public:
 			return;
 		}
 
-		pawn_ = components->queryComponent<IPawnComponent>();
-		if (pawn_)
-		{
-			pawn_->getEventDispatcher().addEventHandler(this);
-		}
+		ompnpcng::pawn_bridge::refreshComponents(*components);
+		attachHandlers();
+	}
+
+	void onReady() override
+	{
+		attachHandlers();
 	}
 
 	void onFree(IComponent* component) override
 	{
-		if (component == pawn_)
+		if (!component)
 		{
-			pawn_ = nullptr;
+			return;
 		}
+		if (component == ompnpcng::pawn_bridge::pawn())
+		{
+			pawnAttached_ = false;
+		}
+		if (component == ompnpcng::pawn_bridge::npcs())
+		{
+			npcAttached_ = false;
+		}
+		ompnpcng::pawn_bridge::forget(*component);
 	}
 
 	void free() override
 	{
-		if (pawn_)
+		if (pawnAttached_ && ompnpcng::pawn_bridge::pawn())
 		{
-			pawn_->getEventDispatcher().removeEventHandler(this);
-			pawn_ = nullptr;
+			ompnpcng::pawn_bridge::pawn()->getEventDispatcher().removeEventHandler(this);
 		}
-
+		if (npcAttached_ && ompnpcng::pawn_bridge::npcs())
+		{
+			ompnpcng::pawn_bridge::npcs()->getEventDispatcher().removeEventHandler(&npcEvents_);
+		}
+		ompnpcng::pawn_bridge::clear();
 		delete this;
 	}
 
@@ -62,8 +77,7 @@ public:
 
 	void onAmxLoad(IPawnScript& script) override
 	{
-		(void)script;
-		// Native registration moves here once the forked NPC script surface is ported.
+		pawn_natives::AmxLoad(script.GetAMX());
 	}
 
 	void onAmxUnload(IPawnScript& script) override
@@ -72,8 +86,23 @@ public:
 	}
 
 private:
-	ICore* core_ = nullptr;
-	IPawnComponent* pawn_ = nullptr;
+	void attachHandlers()
+	{
+		if (!pawnAttached_ && ompnpcng::pawn_bridge::pawn())
+		{
+			ompnpcng::pawn_bridge::pawn()->getEventDispatcher().addEventHandler(this);
+			pawnAttached_ = true;
+		}
+		if (!npcAttached_ && ompnpcng::pawn_bridge::npcs())
+		{
+			ompnpcng::pawn_bridge::npcs()->getEventDispatcher().addEventHandler(&npcEvents_);
+			npcAttached_ = true;
+		}
+	}
+
+	bool pawnAttached_ = false;
+	bool npcAttached_ = false;
+	ompnpcng::pawn_bridge::NPCEvents npcEvents_;
 };
 
 COMPONENT_ENTRY_POINT()

@@ -18,17 +18,20 @@ This repository currently contains the initial scaffold.
 Included already:
 
 - standalone top-level CMake setup
-- separate `core` and `pawn_bridge` component targets
-- bootstrap-only configure mode when vendored dependencies are not present
+- vendored local copies of `omp-sdk`, `omp-network`, `omp-netcode` and `cpp-httplib`
+- real NPC core sources ported from `open.mp/Server/Components/NPCs`
+- successful 32-bit `NPCs.so` build
+- successful isolated load test in a real `omp-server` runtime
+- external Pawn bridge build with ported `NPC_*` natives and callbacks
+- successful isolated component load test for `OMPNPCNGPawn.so`
 - CI skeleton
 - package metadata skeleton
 - initial include/layout/docs structure
 
 Not ported yet:
 
-- the real NPC core from `open.mp/Server/Components/NPCs`
-- the Pawn-facing NPC native surface from `open.mp/Server/Components/Pawn/Scripting/NPC`
 - FCNPC compatibility includes and callbacks
+- a clean replacement strategy for the stock upstream Pawn-side NPC registration
 
 ## Structure
 
@@ -78,6 +81,28 @@ cmake -S . -B build -DOMP_NPC_NG_BOOTSTRAP_ONLY=OFF
 cmake --build build --parallel
 ```
 
+32-bit build for drop-in testing against the current Linux `omp-server` runtime:
+
+```bash
+cmake -S . -B build-port32 \
+  -DOMP_NPC_NG_BOOTSTRAP_ONLY=OFF \
+  -DOMP_NPC_NG_BUILD_PAWN_BRIDGE=OFF \
+  -DCMAKE_C_FLAGS=-m32 \
+  -DCMAKE_CXX_FLAGS=-m32
+cmake --build build-port32 --parallel --target NPCs
+```
+
+32-bit build including the optional external Pawn bridge:
+
+```bash
+cmake -S . -B build-port32-bridge \
+  -DOMP_NPC_NG_BOOTSTRAP_ONLY=OFF \
+  -DOMP_NPC_NG_BUILD_PAWN_BRIDGE=ON \
+  -DCMAKE_C_FLAGS=-m32 \
+  -DCMAKE_CXX_FLAGS=-m32
+cmake --build build-port32-bridge --parallel --target NPCs OMPNPCNGPawn
+```
+
 ## Porting plan
 
 1. Port `open.mp/Server/Components/NPCs` into `src/core/`.
@@ -96,6 +121,8 @@ The old FCNPC codebase is still tightly bound to the legacy SA-MP plugin model, 
 - explicit SDK interfaces
 - drop-in `components/*.so` / `*.dll` deployment
 - cleaner separation between core logic and Pawn integration
+
+Right now, the NPC core is drop-in buildable as `NPCs.so`, and the optional external Pawn bridge also builds as `OMPNPCNGPawn.so`. On a stock `omp-server` runtime the upstream `Pawn.so` still registers the same `NPC_*` native surface, so loading `OMPNPCNGPawn.so` alongside it currently produces duplicate-native warnings. That bridge is therefore primarily useful for forked runtimes where you want to own the NPC Pawn surface separately.
 
 ## License
 

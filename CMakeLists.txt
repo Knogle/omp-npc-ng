@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.19)
 
-project(omp-npc-ng LANGUAGES CXX VERSION 0.1.0)
+project(omp-npc-ng LANGUAGES C CXX VERSION 0.1.0)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+function(GroupSourcesByFolder target)
+endfunction()
 
 option(OMP_NPC_NG_BOOTSTRAP_ONLY "Configure the scaffold even when vendored open.mp deps are missing." ON)
+option(OMP_NPC_NG_BUILD_PAWN_BRIDGE "Build the external Pawn bridge component." OFF)
 
 set(OMP_NPC_NG_DEPS_READY ON)
 foreach(_dep
@@ -20,7 +28,9 @@ if(OMP_NPC_NG_DEPS_READY)
 	add_subdirectory(libs/omp-netcode)
 
 	add_subdirectory(src/core)
-	add_subdirectory(src/pawn_bridge)
+	if(OMP_NPC_NG_BUILD_PAWN_BRIDGE)
+		add_subdirectory(src/pawn_bridge)
+	endif()
 else()
 	if(NOT OMP_NPC_NG_BOOTSTRAP_ONLY)
 		message(FATAL_ERROR
